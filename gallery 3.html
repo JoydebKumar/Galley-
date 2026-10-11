@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>পণ্য ক্যাটালগ - FINAL FIX</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>body{font-family:'Hind Siliguri',sans-serif;background:#EAF0FF}</style>
+</head>
+<body>
+<div class="max-w-[1100px] mx-auto min-h-screen pb-24">
+<div class="px-4 py-3"><h1 class="font-bold text-xl text-[#0B3D6B]">পণ্য ক্যাটালগ — ইনভেন্টরি</h1><p class="text-xs text-gray-500">Cosmetics & Puja Items • Inventory Manager • v5 Fixed</p></div>
+<div class="px-4 flex justify-between mb-3">
+<button onclick="forceReset()" class="bg-red-500 text-white px-4 py-2 rounded-full text-xs font-bold">🔄 Reset করে ৯টা মাল আনুন</button>
+<button onclick="openAdd()" class="bg-[#0F5B9E] text-white px-5 py-2 rounded-full font-bold text-sm">+ Add New Product</button>
+</div>
+<div class="px-4 flex justify-between mb-2"><h2 class="font-bold">All Products (<span id="cnt">0</span>)</h2><input id="search" oninput="render()" placeholder="খুঁজুন..." class="border rounded-full px-3 py-1 text-sm w-32"></div>
+<div id="gallery" class="px-3 grid grid-cols-2 md:grid-cols-3 gap-3"></div>
+</div>
+
+<div id="modal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+<div class="bg-white w-full max-w-md rounded-2xl p-5">
+<h3 id="modalTitle" class="font-bold text-lg mb-3">মাল যোগ করুন</h3>
+<input type="hidden" id="editId">
+<input type="file" id="fileInput" accept="image/*" class="w-full border p-2 rounded mb-2 text-sm">
+<img id="previewImg" class="w-full h-32 object-contain bg-gray-50 rounded hidden mb-2 border">
+<input type="hidden" id="imgStore">
+<input id="prodName" placeholder="নাম" class="w-full border p-3 rounded-xl mb-2 text-sm">
+<input id="prodBuy" type="number" placeholder="ক্রয় মূল্য" class="w-full border p-3 rounded-xl mb-2 text-sm">
+<div class="flex gap-2 mt-3"><button onclick="saveData()" class="flex-1 bg-[#0F5B9E] text-white py-3 rounded-xl font-bold">✅ সেভ করুন</button><button onclick="closeModal()" class="flex-1 bg-gray-200 py-3 rounded-xl">বাতিল</button></div>
+</div>
+</div>
+
+<script>
+function getDefault(){
+ return [
+  {id:1,name:'সিঁদুর - Sindoor',buy:32,img:'https://images.unsplash.com/photo-1584305574647-0cc949a2bb9f?w=400'},
+  {id:2,name:'আগরবাতি - Agarbatti',buy:15,img:'https://images.unsplash.com/photo-1603006905003-be475563bc59?w=400'},
+  {id:3,name:'প্রদীপ/দিয়া - Diya',buy:10,img:'https://images.unsplash.com/photo-1605600659873-d808a13e4d2a?w=400'},
+  {id:4,name:'শঙ্খ - Shankh',buy:150,img:'https://images.unsplash.com/photo-1579584425555-c3ce17fd435d?w=400'},
+  {id:5,name:'শাঁখা পলা - Shakha Pola',buy:120,img:'https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=400'},
+  {id:6,name:'লিপস্টিক - Lipstick',buy:90,img:'https://images.unsplash.com/photo-1586495777744-4413f21062fa?w=400'},
+  {id:7,name:'কাজল - Kajal',buy:40,img:'https://images.unsplash.com/photo-1557205465-f3768ff3a93b?w=400'},
+  {id:8,name:'ফাউন্ডেশন - Foundation',buy:180,img:'https://images.unsplash.com/photo-1557205465-f3768ff3a93b?w=400'},
+  {id:9,name:'আলতা - Alta',buy:25,img:'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=400'}
+ ];
+}
+let products = JSON.parse(localStorage.getItem('gallery_FINAL_V5')||'[]');
+// FIX: যদি ০ টা থাকে তাহলে অটো ডিফল্ট লোড করবে
+if(!products || products.length===0){
+ products = getDefault();
+ localStorage.setItem('gallery_FINAL_V5', JSON.stringify(products));
+}
+function saveLocal(){localStorage.setItem('gallery_FINAL_V5', JSON.stringify(products));}
+function forceReset(){ localStorage.removeItem('gallery_FINAL_V5'); localStorage.removeItem('gallery_fixed_v4'); localStorage.removeItem('buy_gallery_v3'); localStorage.removeItem('radhe_products_v2'); products = getDefault(); saveLocal(); render(); alert('✅ ৯টা মাল ফিরে এসেছে!'); }
+function openAdd(){document.getElementById('editId').value=''; document.getElementById('prodName').value=''; document.getElementById('prodBuy').value=''; document.getElementById('imgStore').value=''; document.getElementById('previewImg').classList.add('hidden'); document.getElementById('modalTitle').innerText='নতুন মাল যোগ করুন'; document.getElementById('modal').classList.remove('hidden');}
+function openEdit(id){let p=products.find(x=>String(x.id)===String(id)); document.getElementById('editId').value=p.id; document.getElementById('prodName').value=p.name; document.getElementById('prodBuy').value=p.buy; document.getElementById('imgStore').value=p.img; let pr=document.getElementById('previewImg'); pr.src=p.img; pr.classList.remove('hidden'); document.getElementById('modalTitle').innerText='এডিট: '+p.name; document.getElementById('modal').classList.remove('hidden');}
+function closeModal(){document.getElementById('modal').classList.add('hidden');}
+document.getElementById('fileInput').addEventListener('change',e=>{let f=e.target.files[0]; if(!f)return; let r=new FileReader(); r.onload=ev=>{document.getElementById('imgStore').value=ev.target.result; let pr=document.getElementById('previewImg'); pr.src=ev.target.result; pr.classList.remove('hidden');}; r.readAsDataURL(f);});
+function saveData(){
+ let id=document.getElementById('editId').value; let name=document.getElementById('prodName').value.trim(); let buy=parseFloat(document.getElementById('prodBuy').value)||0; let img=document.getElementById('imgStore').value;
+ if(!name){alert('নাম লিখুন');return;}
+ if(id){ let i=products.findIndex(x=>String(x.id)===String(id)); if(i>=0){ products[i].name=name; products[i].buy=buy; if(img) products[i].img=img; } }
+ else { if(!img) img='https://picsum.photos/seed/'+Date.now()+'/400/400'; products.unshift({id:Date.now(),name,buy,img}); }
+ saveLocal(); closeModal(); render();
+}
+function deleteData(id){ if(!confirm('মুছবেন?'))return; products=products.filter(x=>String(x.id)!==String(id)); saveLocal(); render(); }
+function render(){
+ let q=document.getElementById('search').value.toLowerCase(); let h='';
+ products.filter(p=>p.name.toLowerCase().includes(q)).forEach(p=>{
+  h+=`<div class="bg-white rounded-xl shadow overflow-hidden relative border"><div class="absolute top-2 right-2 flex gap-1 z-10"><button onclick="openEdit('${p.id}')" class="bg-blue-600 text-white w-7 h-7 rounded-full text-xs">✎</button><button onclick="deleteData('${p.id}')" class="bg-red-500 text-white w-7 h-7 rounded-full text-xs">🗑</button></div><img src="${p.img}" class="w-full h-[120px] object-contain bg-white p-1"><div class="p-2 text-center"><p class="font-bold text-[13px]">${p.name}</p><span class="inline-block mt-1 bg-[#0F5B9E] text-white text-[11px] px-3 py-1 rounded-full">ক্রয় মূল্য: ${p.buy} টাকা</span></div></div>`;
+ });
+ document.getElementById('gallery').innerHTML=h||'<p class="text-center py-20">খালি! Reset বাটনে ক্লিক করুন</p>'; document.getElementById('cnt').innerText=products.length;
+}
+render();
+</script>
+</body>
+</html>
